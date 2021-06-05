@@ -41,3 +41,20 @@ set_target_properties(opengl_window PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "opengl_window"
 )
 
+
+
+add_executable(opengl_triangle
+	opengl_triangle/opengl_triangle.cpp
+	shader_loader/shader_loader.hpp
+	shader_loader/shader_loader.cpp
+
+	opengl_triangle/shader/vertex.glsl
+	opengl_triangle/shader/fragment.glsl
+)
+target_link_libraries(opengl_triangle ${ALL_LIBS})
+set_target_properties(opengl_triangle PROPERTIES
+	ARCHIVE_OUTPUT_DIRECTORY "opengl_triangle"
+	LIBRARY_OUTPUT_DIRECTORY "opengl_triangle"
+	RUNTIME_OUTPUT_DIRECTORY "opengl_triangle"
+)
+
