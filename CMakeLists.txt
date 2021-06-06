@@ -74,3 +74,20 @@ set_target_properties(opengl_triangle_transform PROPERTIES
 	LIBRARY_OUTPUT_DIRECTORY "opengl_triangle_transform"
 	RUNTIME_OUTPUT_DIRECTORY "opengl_triangle_transform"
 )
+
+
+
+add_executable(opengl_colored_cube
+	opengl_colored_cube/opengl_colored_cube.cpp
+	shader_loader/shader_loader.hpp
+	shader_loader/shader_loader.cpp
+
+	opengl_colored_cube/shader/vertex.glsl
+	opengl_colored_cube/shader/fragment.glsl
+)
+target_link_libraries(opengl_colored_cube ${ALL_LIBS})
+set_target_properties(opengl_colored_cube PROPERTIES
+	ARCHIVE_OUTPUT_DIRECTORY "opengl_colored_cube"
+	LIBRARY_OUTPUT_DIRECTORY "opengl_colored_cube"
+	RUNTIME_OUTPUT_DIRECTORY "opengl_colored_cube"
+)
