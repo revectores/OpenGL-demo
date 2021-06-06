@@ -5,8 +5,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "utils/utils.hpp"
-#include "shader_loader/shader_loader.hpp"
+#include "utils.hpp"
+#include "shader_loader.hpp"
 
 
 const GLfloat vertex_buffer_data[] = {

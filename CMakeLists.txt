@@ -15,6 +15,12 @@ include_directories (
 	.
 )
 
+include_directories (
+	${CMAKE_SOURCE_DIR}/common/utils
+	${CMAKE_SOURCE_DIR}/common/shader_loader
+	${CMAKE_SOURCE_DIR}/common/texture_loader
+)
+
 
 set (ALL_LIBS
 	${OPENGL_LIBRARY}
@@ -45,10 +51,10 @@ set_target_properties(opengl_window PROPERTIES
 
 add_executable(opengl_triangle
 	opengl_triangle/opengl_triangle.cpp
-	utils/utils.hpp
-	utils/utils.cpp
-	shader_loader/shader_loader.hpp
-	shader_loader/shader_loader.cpp
+	common/utils/utils.hpp
+	common/utils/utils.cpp
+	common/shader_loader/shader_loader.hpp
+	common/shader_loader/shader_loader.cpp
 
 	opengl_triangle/shader/vertex.glsl
 	opengl_triangle/shader/fragment.glsl
@@ -64,10 +70,10 @@ set_target_properties(opengl_triangle PROPERTIES
 
 add_executable(opengl_triangle_transform
 	opengl_triangle_transform/opengl_triangle_transform.cpp
-	utils/utils.hpp
-	utils/utils.cpp
-	shader_loader/shader_loader.hpp
-	shader_loader/shader_loader.cpp
+	common/utils/utils.hpp
+	common/utils/utils.cpp
+	common/shader_loader/shader_loader.hpp
+	common/shader_loader/shader_loader.cpp
 
 	opengl_triangle_transform/shader/vertex.glsl
 	opengl_triangle_transform/shader/fragment.glsl
@@ -83,10 +89,10 @@ set_target_properties(opengl_triangle_transform PROPERTIES
 
 add_executable(opengl_colored_cube
 	opengl_colored_cube/opengl_colored_cube.cpp
-	utils/utils.hpp
-	utils/utils.cpp
-	shader_loader/shader_loader.hpp
-	shader_loader/shader_loader.cpp
+	common/utils/utils.hpp
+	common/utils/utils.cpp
+	common/shader_loader/shader_loader.hpp
+	common/shader_loader/shader_loader.cpp
 
 	opengl_colored_cube/shader/vertex.glsl
 	opengl_colored_cube/shader/fragment.glsl
@@ -102,12 +108,12 @@ set_target_properties(opengl_colored_cube PROPERTIES
 
 add_executable(opengl_textured_cube
 	opengl_textured_cube/opengl_textured_cube.cpp
-	utils/utils.hpp
-	utils/utils.cpp
-	shader_loader/shader_loader.hpp
-	shader_loader/shader_loader.cpp
-	texture_loader/texture_loader.hpp
-	texture_loader/texture_loader.cpp
+	common/utils/utils.hpp
+	common/utils/utils.cpp
+	common/shader_loader/shader_loader.hpp
+	common/shader_loader/shader_loader.cpp
+	common/texture_loader/texture_loader.hpp
+	common/texture_loader/texture_loader.cpp
 
 	opengl_textured_cube/shader/vertex.glsl
 	opengl_textured_cube/shader/fragment.glsl

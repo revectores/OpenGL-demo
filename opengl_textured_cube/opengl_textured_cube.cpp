@@ -6,9 +6,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "utils/utils.hpp"
-#include "shader_loader/shader_loader.hpp"
-#include "texture_loader/texture_loader.hpp"
+#include "utils.hpp"
+#include "shader_loader.hpp"
+#include "texture_loader.hpp"
 
 static const GLfloat vertex_buffer_data[] = {
 	-1.0f,-1.0f,-1.0f,

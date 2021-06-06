@@ -6,8 +6,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "utils/utils.hpp"
-#include "shader_loader/shader_loader.hpp"
+#include "utils.hpp"
+#include "shader_loader.hpp"
 
 
 const GLfloat vertex_buffer_data[] = {
