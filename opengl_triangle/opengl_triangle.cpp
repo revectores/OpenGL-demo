@@ -86,20 +86,22 @@ int main(){
 	GLuint vertex_buffer_id = create_buffer(vertex_buffer_data, sizeof(vertex_buffer_data));
 
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
-	do {
+	while (!is_closed(window)) {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(program_id);
 
 		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+
 		glDisableVertexAttribArray(0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-	} while (!is_closed(window));
+	}
 
 	glDeleteBuffers(1, &vertex_buffer_id);
 	glDeleteVertexArrays(1, &vertex_array_id);
