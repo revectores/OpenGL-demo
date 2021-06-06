@@ -91,3 +91,22 @@ set_target_properties(opengl_colored_cube PROPERTIES
 	LIBRARY_OUTPUT_DIRECTORY "opengl_colored_cube"
 	RUNTIME_OUTPUT_DIRECTORY "opengl_colored_cube"
 )
+
+
+
+add_executable(opengl_textured_cube
+	opengl_textured_cube/opengl_textured_cube.cpp
+	shader_loader/shader_loader.hpp
+	shader_loader/shader_loader.cpp
+	texture_loader/texture_loader.hpp
+	texture_loader/texture_loader.cpp
+
+	opengl_textured_cube/shader/vertex.glsl
+	opengl_textured_cube/shader/fragment.glsl
+)
+target_link_libraries(opengl_textured_cube ${ALL_LIBS})
+set_target_properties(opengl_textured_cube PROPERTIES
+	ARCHIVE_OUTPUT_DIRECTORY "opengl_textured_cube"
+	LIBRARY_OUTPUT_DIRECTORY "opengl_textured_cube"
+	RUNTIME_OUTPUT_DIRECTORY "opengl_textured_cube"
+)
