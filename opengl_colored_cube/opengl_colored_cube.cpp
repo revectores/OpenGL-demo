@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "utils/utils.hpp"
 #include "shader_loader/shader_loader.hpp"
 
 
@@ -88,69 +89,6 @@ const GLfloat color_buffer_data[] = {
 };
 
 
-GLFWwindow* glfw_init(){
-	if (!glfwInit()) {
-		fprintf(stderr, "Failed to initialize GLFW\n");
-		getchar();
-		exit(-1);
-	}
-
-	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	GLFWwindow* window = glfwCreateWindow(1024, 768, "Demo 1", NULL, NULL);
-	if (window == NULL){
-		fprintf(stderr, "Failed to open GLFW window.\n");
-		getchar();
-		glfwTerminate();
-		exit(-1);
-	}
-	glfwMakeContextCurrent(window);
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-
-	return window;
-}
-
-
-bool is_closed(GLFWwindow* window){
-	return glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS || glfwWindowShouldClose(window) != 0;
-}
-
-
-void glew_init(){
-	if (glewInit() != GLEW_OK) {
-		fprintf(stderr, "Failed to initialize GLEW.\n");
-		getchar();
-		glfwTerminate();
-		exit(-1);
-	}
-}
-
-
-GLuint create_vertex_array(){
-	GLuint vertex_array_id;
-
-	glGenVertexArrays(1, &vertex_array_id);
-	glBindVertexArray(vertex_array_id);
-
-	return vertex_array_id;
-}
-
-
-GLuint create_buffer(const GLfloat* buffer_data, int buffer_data_size){
-	GLuint buffer_id;
-
-	glGenBuffers(1, &buffer_id);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
-	glBufferData(GL_ARRAY_BUFFER, buffer_data_size, buffer_data, GL_STATIC_DRAW);
-
-	return buffer_id;
-}
-
-
 glm::mat4 make_mvp(){
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 	glm::mat4 view = glm::lookAt(glm::vec3(4, 3, -3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
@@ -162,6 +100,8 @@ glm::mat4 make_mvp(){
 
 int main(){
 	GLFWwindow* window = glfw_init();
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+
 	glew_init();
 
 	glEnable(GL_DEPTH_TEST);

@@ -45,6 +45,8 @@ set_target_properties(opengl_window PROPERTIES
 
 add_executable(opengl_triangle
 	opengl_triangle/opengl_triangle.cpp
+	utils/utils.hpp
+	utils/utils.cpp
 	shader_loader/shader_loader.hpp
 	shader_loader/shader_loader.cpp
 
@@ -62,6 +64,8 @@ set_target_properties(opengl_triangle PROPERTIES
 
 add_executable(opengl_triangle_transform
 	opengl_triangle_transform/opengl_triangle_transform.cpp
+	utils/utils.hpp
+	utils/utils.cpp
 	shader_loader/shader_loader.hpp
 	shader_loader/shader_loader.cpp
 
@@ -79,6 +83,8 @@ set_target_properties(opengl_triangle_transform PROPERTIES
 
 add_executable(opengl_colored_cube
 	opengl_colored_cube/opengl_colored_cube.cpp
+	utils/utils.hpp
+	utils/utils.cpp
 	shader_loader/shader_loader.hpp
 	shader_loader/shader_loader.cpp
 
@@ -96,6 +102,8 @@ set_target_properties(opengl_colored_cube PROPERTIES
 
 add_executable(opengl_textured_cube
 	opengl_textured_cube/opengl_textured_cube.cpp
+	utils/utils.hpp
+	utils/utils.cpp
 	shader_loader/shader_loader.hpp
 	shader_loader/shader_loader.cpp
 	texture_loader/texture_loader.hpp
