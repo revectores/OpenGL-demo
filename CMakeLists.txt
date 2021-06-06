@@ -19,6 +19,7 @@ include_directories (
 	${CMAKE_SOURCE_DIR}/common/utils
 	${CMAKE_SOURCE_DIR}/common/shader_loader
 	${CMAKE_SOURCE_DIR}/common/texture_loader
+	${CMAKE_SOURCE_DIR}/common/events
 )
 
 
@@ -123,4 +124,26 @@ set_target_properties(opengl_textured_cube PROPERTIES
 	ARCHIVE_OUTPUT_DIRECTORY "opengl_textured_cube"
 	LIBRARY_OUTPUT_DIRECTORY "opengl_textured_cube"
 	RUNTIME_OUTPUT_DIRECTORY "opengl_textured_cube"
+)
+
+
+add_executable(opengl_event
+	opengl_event/opengl_event.cpp
+	common/utils/utils.hpp
+	common/utils/utils.cpp
+	common/shader_loader/shader_loader.hpp
+	common/shader_loader/shader_loader.cpp
+	common/texture_loader/texture_loader.hpp
+	common/texture_loader/texture_loader.cpp
+	common/events/events.hpp
+	common/events/events.cpp
+
+	opengl_event/shader/vertex.glsl
+	opengl_event/shader/fragment.glsl
+)
+target_link_libraries(opengl_event ${ALL_LIBS})
+set_target_properties(opengl_event PROPERTIES
+	ARCHIVE_OUTPUT_DIRECTORY "opengl_event"
+	LIBRARY_OUTPUT_DIRECTORY "opengl_event"
+	RUNTIME_OUTPUT_DIRECTORY "opengl_event"
 )
