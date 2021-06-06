@@ -7,7 +7,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-const unsigned int BITS_PER_PIXEL = 24;
+const uint16_t BITS_PER_PIXEL = 24;
 
 #pragma pack(push, 1)
 struct bitmap_file_header {
@@ -135,13 +135,13 @@ GLuint load_dds(const char *image_path){
 
 	fread(&header, sizeof(struct dds_header), 1, dds_file);
 
-	unsigned int image_size = header.mipmap_count > 1 ? header.pitch_or_linear_size * 2 : header.pitch_or_linear_size;
+	size_t image_size = header.mipmap_count > 1 ? header.pitch_or_linear_size * 2 : header.pitch_or_linear_size;
 	char* image = (char*) malloc(image_size);
 	fread(image, 1, image_size, dds_file);
 	fclose(dds_file);
 
-	unsigned int components = (header.pixel_format.fourCC == FOURCC_DXT1) ? 3 : 4;
-	unsigned int format;
+	size_t components = (header.pixel_format.fourCC == FOURCC_DXT1) ? 3 : 4;
+	uint32_t format;
 
 	switch(header.pixel_format.fourCC) {
 	case FOURCC_DXT1:
@@ -163,13 +163,13 @@ GLuint load_dds(const char *image_path){
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	uint32_t block_size = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16;
-	uint32_t offset = 0;
-	uint32_t width  = header.width;
-	uint32_t height = header.height;
+	size_t block_size = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16;
+	size_t offset = 0;
+	size_t width  = header.width;
+	size_t height = header.height;
 
-	for (unsigned int level = 0; level < header.mipmap_count && (width || height); level++){
-		unsigned int size = ((width + 3) / 4) * ((height + 3) / 4) * block_size;
+	for (size_t level = 0; level < header.mipmap_count && (width || height); level++){
+		size_t size = ((width + 3) / 4) * ((height + 3) / 4) * block_size;
 		glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height, 0, size, image + offset);
 
 		offset += size;
