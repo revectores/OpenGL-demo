@@ -1,218 +1,185 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #include <GL/glew.h>
-
 #include <GLFW/glfw3.h>
 
+const unsigned int BITS_PER_PIXEL = 24;
 
-GLuint loadBMP_custom(const char * imagepath){
+#pragma pack(push, 1)
+struct bitmap_file_header {
+	uint8_t  magic[2];
+	uint32_t file_size;
+	uint16_t _reserved[2];
+	uint32_t offset;
+};
 
-	printf("Reading image %s\n", imagepath);
+struct bitmap_info_header {
+	uint32_t info_header_size;
+	uint32_t width;
+	uint32_t height;
+	uint16_t color_plane_n;
+	uint16_t bits_per_pixel;
+	uint32_t compression_method;
+	uint32_t image_size;
+	uint32_t horizontal_resolution;
+	uint32_t vertical_resolution;
+	uint32_t color_n;
+	uint32_t important_color_n;
+};
 
-	// Data read from the header of the BMP file
-	unsigned char header[54];
-	unsigned int dataPos;
-	unsigned int imageSize;
-	unsigned int width, height;
-	// Actual RGB data
-	unsigned char * data;
 
-	// Open the file
-	FILE * file = fopen(imagepath,"rb");
-	if (!file){
-		printf("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath);
+struct dds_header {
+	uint32_t magic;
+	uint32_t size;
+	uint32_t flags;
+	uint32_t height;
+	uint32_t width;
+	uint32_t pitch_or_linear_size;
+	uint32_t depth;
+	uint32_t mipmap_count;
+	uint32_t _reserved1[11];
+
+	struct {
+		uint32_t size;
+		uint32_t flags;
+		uint32_t fourCC;
+		#define FOURCC_DXT1 0x31545844
+		#define FOURCC_DXT3 0x33545844
+		#define FOURCC_DXT5 0x35545844
+		uint32_t RGB_bit_count;
+		uint32_t R_bitmask;
+		uint32_t G_bitmask;
+		uint32_t B_bitmask;
+		uint32_t A_bitmask;
+	} pixel_format;
+
+	struct {
+		uint32_t caps1;
+		uint32_t caps2;
+		uint32_t DDSX;
+		uint32_t _reserved;
+	} caps;
+	uint32_t _reserved2;
+};
+#pragma pack(pop)
+
+
+bool validate_bitmap_file_header(struct bitmap_file_header *file_header){
+	return file_header->magic[0] == 'B' && file_header->magic[1] == 'M';
+}
+
+bool validate_bitmap_info_header(struct bitmap_info_header *info_header){
+	return (info_header->bits_per_pixel == BITS_PER_PIXEL) && (info_header->compression_method == 0);
+}
+
+
+GLuint load_bmp(const char *image_path){
+	FILE *bmp_file = fopen(image_path, "rb");
+
+	if (!bmp_file){
 		getchar();
-		return 0;
+		fprintf(stderr, "File %s does not exist\n", image_path);
+		exit(-1);
 	}
 
-	// Read the header, i.e. the 54 first bytes
+	struct bitmap_file_header file_header;
+	struct bitmap_info_header info_header;
 
-	// If less than 54 bytes are read, problem
-	if ( fread(header, 1, 54, file)!=54 ){ 
-		printf("Not a correct BMP file\n");
-		fclose(file);
-		return 0;
+	if (!fread(&file_header, sizeof(struct bitmap_file_header), 1, bmp_file)
+	 || !validate_bitmap_file_header(&file_header)
+	 || !fread(&info_header, sizeof(struct bitmap_info_header), 1, bmp_file)
+	 || !validate_bitmap_info_header(&info_header)
+	) {
+		fprintf(stderr, "Invalid BMP file\n");
+		fclose(bmp_file);
+		exit(-1);
 	}
-	// A BMP files always begins with "BM"
-	if ( header[0]!='B' || header[1]!='M' ){
-		printf("Not a correct BMP file\n");
-		fclose(file);
-		return 0;
-	}
-	// Make sure this is a 24bpp file
-	if ( *(int*)&(header[0x1E])!=0  )         {printf("Not a correct BMP file\n");    fclose(file); return 0;}
-	if ( *(int*)&(header[0x1C])!=24 )         {printf("Not a correct BMP file\n");    fclose(file); return 0;}
 
-	// Read the information about the image
-	dataPos    = *(int*)&(header[0x0A]);
-	imageSize  = *(int*)&(header[0x22]);
-	width      = *(int*)&(header[0x12]);
-	height     = *(int*)&(header[0x16]);
+	if (!file_header.offset)     file_header.offset = 54;
+	if (!info_header.image_size) info_header.image_size = info_header.width * info_header.height * 3;
 
-	// Some BMP files are misformatted, guess missing information
-	if (imageSize==0)    imageSize=width*height*3; // 3 : one byte for each Red, Green and Blue component
-	if (dataPos==0)      dataPos=54; // The BMP header is done that way
+	char* image = (char*) malloc(info_header.image_size);
+	fread(image, 1, info_header.image_size, bmp_file);
+	fclose(bmp_file);
 
-	// Create a buffer
-	data = new unsigned char [imageSize];
+	GLuint texture_id;
+	glGenTextures(1, &texture_id);
+	glBindTexture(GL_TEXTURE_2D, texture_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, info_header.width, info_header.height, 0, GL_BGR, GL_UNSIGNED_BYTE, image);
 
-	// Read the actual data from the file into the buffer
-	fread(data,1,imageSize,file);
+	free(image);
 
-	// Everything is in memory now, the file can be closed.
-	fclose (file);
-
-	// Create one OpenGL texture
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-	
-	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, textureID);
-
-	// Give the image to OpenGL
-	glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
-
-	// OpenGL has now copied the data. Free our own version
-	delete [] data;
-
-	// Poor filtering, or ...
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
-
-	// ... nice trilinear filtering ...
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	// ... which requires mipmaps. Generate them automatically.
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	// Return the ID of the texture we just created
-	return textureID;
+	return texture_id;
 }
 
-// Since GLFW 3, glfwLoadTexture2D() has been removed. You have to use another texture loading library, 
-// or do it yourself (just like loadBMP_custom and loadDDS)
-//GLuint loadTGA_glfw(const char * imagepath){
-//
-//	// Create one OpenGL texture
-//	GLuint textureID;
-//	glGenTextures(1, &textureID);
-//
-//	// "Bind" the newly created texture : all future texture functions will modify this texture
-//	glBindTexture(GL_TEXTURE_2D, textureID);
-//
-//	// Read the file, call glTexImage2D with the right parameters
-//	glfwLoadTexture2D(imagepath, 0);
-//
-//	// Nice trilinear filtering.
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
-//	glGenerateMipmap(GL_TEXTURE_2D);
-//
-//	// Return the ID of the texture we just created
-//	return textureID;
-//}
 
+GLuint load_dds(const char *image_path){
+	struct dds_header header;
 
-
-#define FOURCC_DXT1 0x31545844 // Equivalent to "DXT1" in ASCII
-#define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII
-#define FOURCC_DXT5 0x35545844 // Equivalent to "DXT5" in ASCII
-
-GLuint loadDDS(const char * imagepath){
-
-	unsigned char header[124];
-
-	FILE *fp; 
- 
-	/* try to open the file */ 
-	fp = fopen(imagepath, "rb"); 
-	if (fp == NULL){
-		printf("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath); getchar(); 
-		return 0;
+	FILE *dds_file;
+	dds_file = fopen(image_path, "rb");
+	if (!dds_file) {
+		fprintf(stderr, "File %s does not exist", image_path);
+		exit(-1);
 	}
-   
-	/* verify the type of file */ 
-	char filecode[4]; 
-	fread(filecode, 1, 4, fp); 
-	if (strncmp(filecode, "DDS ", 4) != 0) { 
-		fclose(fp); 
-		return 0; 
-	}
-	
-	/* get the surface desc */ 
-	fread(&header, 124, 1, fp); 
 
-	unsigned int height      = *(unsigned int*)&(header[8 ]);
-	unsigned int width	     = *(unsigned int*)&(header[12]);
-	unsigned int linearSize	 = *(unsigned int*)&(header[16]);
-	unsigned int mipMapCount = *(unsigned int*)&(header[24]);
-	unsigned int fourCC      = *(unsigned int*)&(header[80]);
+	fread(&header, sizeof(struct dds_header), 1, dds_file);
 
- 
-	unsigned char * buffer;
-	unsigned int bufsize;
-	/* how big is it going to be including all mipmaps? */ 
-	bufsize = mipMapCount > 1 ? linearSize * 2 : linearSize; 
-	buffer = (unsigned char*)malloc(bufsize * sizeof(unsigned char)); 
-	fread(buffer, 1, bufsize, fp); 
-	/* close the file pointer */ 
-	fclose(fp);
+	unsigned int image_size = header.mipmap_count > 1 ? header.pitch_or_linear_size * 2 : header.pitch_or_linear_size;
+	char* image = (char*) malloc(image_size);
+	fread(image, 1, image_size, dds_file);
+	fclose(dds_file);
 
-	unsigned int components  = (fourCC == FOURCC_DXT1) ? 3 : 4; 
+	unsigned int components = (header.pixel_format.fourCC == FOURCC_DXT1) ? 3 : 4;
 	unsigned int format;
-	switch(fourCC) 
-	{ 
-	case FOURCC_DXT1: 
-		format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; 
-		break; 
-	case FOURCC_DXT3: 
-		format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT; 
-		break; 
-	case FOURCC_DXT5: 
-		format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; 
-		break; 
-	default: 
-		free(buffer); 
-		return 0; 
+
+	switch(header.pixel_format.fourCC) {
+	case FOURCC_DXT1:
+		format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+		break;
+	case FOURCC_DXT3:
+		format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		break;
+	case FOURCC_DXT5:
+		format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		break;
+	default:
+		free(image);
+		exit(-1);
 	}
 
-	// Create one OpenGL texture
-	GLuint textureID;
-	glGenTextures(1, &textureID);
+	GLuint texture_id;
+	glGenTextures(1, &texture_id);
+	glBindTexture(GL_TEXTURE_2D, texture_id);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glPixelStorei(GL_UNPACK_ALIGNMENT,1);	
-	
-	unsigned int blockSize = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16; 
-	unsigned int offset = 0;
+	uint32_t block_size = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16;
+	uint32_t offset = 0;
+	uint32_t width  = header.width;
+	uint32_t height = header.height;
 
-	/* load the mipmaps */ 
-	for (unsigned int level = 0; level < mipMapCount && (width || height); ++level) 
-	{ 
-		unsigned int size = ((width+3)/4)*((height+3)/4)*blockSize; 
-		glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height,  
-			0, size, buffer + offset); 
-	 
-		offset += size; 
-		width  /= 2; 
-		height /= 2; 
+	for (unsigned int level = 0; level < header.mipmap_count && (width || height); level++){
+		unsigned int size = ((width + 3) / 4) * ((height + 3) / 4) * block_size;
+		glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height, 0, size, image + offset);
 
-		// Deal with Non-Power-Of-Two textures. This code is not included in the webpage to reduce clutter.
-		if(width < 1) width = 1;
-		if(height < 1) height = 1;
+		offset += size;
+		width  /= 2;
+		height /= 2;
 
-	} 
+		if (width  < 1) width  = 1;
+		if (height < 1) height = 1;
+	}
 
-	free(buffer); 
-
-	return textureID;
-
-
+	free(image);
+	return texture_id;
 }
