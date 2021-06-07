@@ -137,6 +137,26 @@ std::vector<face_t> load_obj(const char *obj_file_path){
 }
 
 
+face_vector_triple_t extract_face_components(std::vector<face_t> faces){
+	face_vector_triple_t face_vector_triple(
+		std::vector<glm::vec3>(FACE_PARAM_SIZE * faces.size()),
+		std::vector<glm::vec2>(FACE_PARAM_SIZE * faces.size()),
+		std::vector<glm::vec3>(FACE_PARAM_SIZE * faces.size())
+	);
+
+	size_t cnt = 0;
+
+	for (auto face: faces) {
+		for (auto face_element: face) {
+			std::get<VERTEX> (face_vector_triple)[cnt]   = face_element.vertex;
+			std::get<TEXTURE>(face_vector_triple)[cnt]   = face_element.texture;
+			std::get<NORMAL> (face_vector_triple)[cnt++] = face_element.normal;
+		}
+	}
+
+	return face_vector_triple;
+}
+
 // int main(){
 // 	std::vector<face_t> faces = load_obj("cube.obj");
 // 	for (auto face: faces) {
