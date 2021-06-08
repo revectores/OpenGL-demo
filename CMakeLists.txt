@@ -174,3 +174,27 @@ set_target_properties(opengl_model_loading PROPERTIES
 	LIBRARY_OUTPUT_DIRECTORY "opengl_model_loading"
 	RUNTIME_OUTPUT_DIRECTORY "opengl_model_loading"
 )
+
+
+add_executable(opengl_shading
+	opengl_shading/opengl_shading.cpp
+	common/utils/utils.hpp
+	common/utils/utils.cpp
+	common/shader_loader/shader_loader.hpp
+	common/shader_loader/shader_loader.cpp
+	common/texture_loader/texture_loader.hpp
+	common/texture_loader/texture_loader.cpp
+	common/obj_loader/obj_loader.hpp
+	common/obj_loader/obj_loader.cpp
+	common/events/events.hpp
+	common/events/events.cpp
+
+	opengl_shading/shader/vertex.glsl
+	opengl_shading/shader/fragment.glsl
+)
+target_link_libraries(opengl_shading ${ALL_LIBS})
+set_target_properties(opengl_shading PROPERTIES
+	ARCHIVE_OUTPUT_DIRECTORY "opengl_shading"
+	LIBRARY_OUTPUT_DIRECTORY "opengl_shading"
+	RUNTIME_OUTPUT_DIRECTORY "opengl_shading"
+)
