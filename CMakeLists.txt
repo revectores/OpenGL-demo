@@ -20,6 +20,7 @@ include_directories (
 	${CMAKE_SOURCE_DIR}/common/utils
 	${CMAKE_SOURCE_DIR}/common/shader_loader
 	${CMAKE_SOURCE_DIR}/common/texture_loader
+	${CMAKE_SOURCE_DIR}/common/vbo_indexer
 	${CMAKE_SOURCE_DIR}/common/obj_loader
 	${CMAKE_SOURCE_DIR}/common/events
 )
@@ -197,4 +198,30 @@ set_target_properties(opengl_shading PROPERTIES
 	ARCHIVE_OUTPUT_DIRECTORY "opengl_shading"
 	LIBRARY_OUTPUT_DIRECTORY "opengl_shading"
 	RUNTIME_OUTPUT_DIRECTORY "opengl_shading"
+)
+
+
+add_executable(opengl_vbo_indexing
+	opengl_vbo_indexing/opengl_vbo_indexing.cpp
+	common/utils/utils.hpp
+	common/utils/utils.cpp
+	common/shader_loader/shader_loader.hpp
+	common/shader_loader/shader_loader.cpp
+	common/texture_loader/texture_loader.hpp
+	common/texture_loader/texture_loader.cpp
+	common/obj_loader/obj_loader.hpp
+	common/obj_loader/obj_loader.cpp
+	common/vbo_indexer/vbo_indexer.hpp
+	common/vbo_indexer/vbo_indexer.cpp
+	common/events/events.hpp
+	common/events/events.cpp
+
+	opengl_vbo_indexing/shader/vertex.glsl
+	opengl_vbo_indexing/shader/fragment.glsl
+)
+target_link_libraries(opengl_vbo_indexing ${ALL_LIBS})
+set_target_properties(opengl_vbo_indexing PROPERTIES
+	ARCHIVE_OUTPUT_DIRECTORY "opengl_vbo_indexing"
+	LIBRARY_OUTPUT_DIRECTORY "opengl_vbo_indexing"
+	RUNTIME_OUTPUT_DIRECTORY "opengl_vbo_indexing"
 )
