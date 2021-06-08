@@ -1,5 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
 project (opengl-demos)
+set (CMAKE_CXX_STANDARD 20)
 find_package(OpenGL REQUIRED)
 
 
@@ -19,6 +20,7 @@ include_directories (
 	${CMAKE_SOURCE_DIR}/common/utils
 	${CMAKE_SOURCE_DIR}/common/shader_loader
 	${CMAKE_SOURCE_DIR}/common/texture_loader
+	${CMAKE_SOURCE_DIR}/common/obj_loader
 	${CMAKE_SOURCE_DIR}/common/events
 )
 
@@ -146,4 +148,29 @@ set_target_properties(opengl_event PROPERTIES
 	ARCHIVE_OUTPUT_DIRECTORY "opengl_event"
 	LIBRARY_OUTPUT_DIRECTORY "opengl_event"
 	RUNTIME_OUTPUT_DIRECTORY "opengl_event"
+)
+
+
+
+add_executable(opengl_model_loading
+	opengl_model_loading/opengl_model_loading.cpp
+	common/utils/utils.hpp
+	common/utils/utils.cpp
+	common/shader_loader/shader_loader.hpp
+	common/shader_loader/shader_loader.cpp
+	common/texture_loader/texture_loader.hpp
+	common/texture_loader/texture_loader.cpp
+	common/obj_loader/obj_loader.hpp
+	common/obj_loader/obj_loader.cpp
+	common/events/events.hpp
+	common/events/events.cpp
+
+	opengl_model_loading/shader/vertex.glsl
+	opengl_model_loading/shader/fragment.glsl
+)
+target_link_libraries(opengl_model_loading ${ALL_LIBS})
+set_target_properties(opengl_model_loading PROPERTIES
+	ARCHIVE_OUTPUT_DIRECTORY "opengl_model_loading"
+	LIBRARY_OUTPUT_DIRECTORY "opengl_model_loading"
+	RUNTIME_OUTPUT_DIRECTORY "opengl_model_loading"
 )
