@@ -22,6 +22,7 @@ include_directories (
 	${CMAKE_SOURCE_DIR}/common/texture_loader
 	${CMAKE_SOURCE_DIR}/common/vbo_indexer
 	${CMAKE_SOURCE_DIR}/common/obj_loader
+	${CMAKE_SOURCE_DIR}/common/text2d
 	${CMAKE_SOURCE_DIR}/common/events
 )
 
@@ -251,4 +252,33 @@ set_target_properties(opengl_transparency PROPERTIES
 	ARCHIVE_OUTPUT_DIRECTORY "opengl_transparency"
 	LIBRARY_OUTPUT_DIRECTORY "opengl_transparency"
 	RUNTIME_OUTPUT_DIRECTORY "opengl_transparency"
+)
+
+
+
+add_executable(opengl_2d_text
+	opengl_2d_text/opengl_2d_text.cpp
+	common/utils/utils.hpp
+	common/utils/utils.cpp
+	common/shader_loader/shader_loader.hpp
+	common/shader_loader/shader_loader.cpp
+	common/texture_loader/texture_loader.hpp
+	common/texture_loader/texture_loader.cpp
+	common/obj_loader/obj_loader.hpp
+	common/obj_loader/obj_loader.cpp
+	common/vbo_indexer/vbo_indexer.hpp
+	common/vbo_indexer/vbo_indexer.cpp
+	common/text2d/text2d.hpp
+	common/text2d/text2d.cpp
+	common/events/events.hpp
+	common/events/events.cpp
+
+	opengl_2d_text/shader/vertex.glsl
+	opengl_2d_text/shader/fragment.glsl
+)
+target_link_libraries(opengl_2d_text ${ALL_LIBS})
+set_target_properties(opengl_2d_text PROPERTIES
+	ARCHIVE_OUTPUT_DIRECTORY "opengl_2d_text"
+	LIBRARY_OUTPUT_DIRECTORY "opengl_2d_text"
+	RUNTIME_OUTPUT_DIRECTORY "opengl_2d_text"
 )
