@@ -58,7 +58,7 @@ GLuint create_vertex_array(){
 }
 
 
-GLuint create_buffer(const GLfloat* buffer_data, int buffer_data_size){
+GLuint create_buffer(const void* buffer_data, int buffer_data_size){
 	GLuint buffer_id;
 
 	glGenBuffers(1, &buffer_id);
