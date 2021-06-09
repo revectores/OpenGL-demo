@@ -32,71 +32,64 @@ int main(){
 	std::vector<face_t> faces = load_obj("suzanne.obj");
 	auto face_vector_triple = extract_face_components(faces);
 	auto vertices = std::get<VERTEX>(face_vector_triple);
-	auto textures = std::get<TEXTURE>(face_vector_triple);
+	auto uvs      = std::get<TEXTURE>(face_vector_triple);
 	auto normals  = std::get<NORMAL>(face_vector_triple);
 
 	std::vector<unsigned short> indices;
 	std::vector<glm::vec3> indexed_vertices;
 	std::vector<glm::vec2> indexed_uvs;
 	std::vector<glm::vec3> indexed_normals;
-	indexVBO(vertices, textures, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
+	indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
 
-	GLuint vertex_array_id   = create_vertex_array();
-	GLuint vertex_buffer_id  = create_buffer((const GLfloat*)&indexed_vertices[0], indexed_vertices.size() * sizeof(glm::vec3));
-	GLuint uv_buffer_id      = create_buffer((const GLfloat*)&indexed_uvs[0],      indexed_uvs.size() * sizeof(glm::vec2));
-	GLuint normal_buffer_id  = create_buffer((const GLfloat*)&indexed_normals[0],  indexed_normals.size()  * sizeof(glm::vec3));
-	GLuint element_buffer_id = create_buffer((const GLshort*)&indices[0],          indices.size() * sizeof(unsigned short));
-	GLuint program_id = load_shaders("shader/vertex.glsl", "shader/fragment.glsl");
+	GLuint vertex_array   = create_vertex_array();
+	GLuint vertex_buffer  = create_buffer((const GLfloat*)&indexed_vertices[0], indexed_vertices.size() * sizeof(glm::vec3));
+	GLuint uv_buffer      = create_buffer((const GLfloat*)&indexed_uvs[0],      indexed_uvs.size() * sizeof(glm::vec2));
+	GLuint normal_buffer  = create_buffer((const GLfloat*)&indexed_normals[0],  indexed_normals.size() * sizeof(glm::vec3));
+	GLuint element_buffer = create_buffer((const GLshort*)&indices[0],          indices.size() * sizeof(unsigned short));
+	GLuint program        = load_shaders("shader/vertex.glsl", "shader/fragment.glsl");
+	GLuint texture        = load_dds("uvmap.DDS");
 
-	GLuint matrix_id       = glGetUniformLocation(program_id, "mvp");
-	GLuint view_matrix_id  = glGetUniformLocation(program_id, "v");
-	GLuint model_matrix_id = glGetUniformLocation(program_id, "m");
-	GLuint light_id        = glGetUniformLocation(program_id, "light_position_worldspace");
-
-	GLuint texture = load_dds("uvmap.DDS");
-	GLuint texture_id = glGetUniformLocation(program_id, "texture_sampler");
+	GLuint mvp_ul     = glGetUniformLocation(program, "mvp");
+	GLuint view_ul    = glGetUniformLocation(program, "v");
+	GLuint model_ul   = glGetUniformLocation(program, "m");
+	GLuint light_ul   = glGetUniformLocation(program, "light_position_worldspace");
+	GLuint texture_ul = glGetUniformLocation(program, "texture_sampler");
 
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 	while (!is_closed(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glUseProgram(program_id);
+		glUseProgram(program);
 
 		compute_matrices_from_inputs(window);
 		glm::mat4 projection = get_projection_matrix();
 		glm::mat4 view       = get_view_matrix();
 		glm::mat4 model      = glm::mat4(1.0);
 		glm::mat4 mvp        = projection * view * model;
-		glUniformMatrix4fv(matrix_id, 1, GL_FALSE, &mvp[0][0]);
-		glUniformMatrix4fv(model_matrix_id, 1, GL_FALSE, &model[0][0]);
-		glUniformMatrix4fv(view_matrix_id, 1, GL_FALSE, &view[0][0]);
+		glUniformMatrix4fv(mvp_ul,   1, GL_FALSE, &mvp[0][0]);
+		glUniformMatrix4fv(model_ul, 1, GL_FALSE, &model[0][0]);
+		glUniformMatrix4fv(view_ul,  1, GL_FALSE, &view[0][0]);
 
 		glm::vec3 light_pos = glm::vec3(4, 4, 4);
-		glUniform3f(light_id, light_pos.x, light_pos.y, light_pos.z);
+		glUniform3f(light_ul, light_pos.x, light_pos.y, light_pos.z);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
-		glUniform1i(texture_id, 0);
+		glUniform1i(texture_ul, 0);
 
 		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ARRAY_BUFFER, uv_buffer_id);
+		glBindBuffer(GL_ARRAY_BUFFER, uv_buffer);
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		glEnableVertexAttribArray(2);
-		glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_id);
+		glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_id);
-
-		glDrawElements(
-			GL_TRIANGLES,
-			indices.size(),
-			GL_UNSIGNED_SHORT,
-			(void*)0
-		);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_SHORT, (void*)0);
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
@@ -106,12 +99,12 @@ int main(){
 		glfwPollEvents();
 	}
 
-	glDeleteBuffers(1, &vertex_buffer_id);
-	glDeleteBuffers(1, &uv_buffer_id);
-	glDeleteBuffers(1, &normal_buffer_id);
-	glDeleteVertexArrays(1, &vertex_array_id);
-	glDeleteVertexArrays(1, &texture_id);
-	glDeleteProgram(program_id);
+	glDeleteBuffers(1, &vertex_buffer);
+	glDeleteBuffers(1, &uv_buffer);
+	glDeleteBuffers(1, &normal_buffer);
+	glDeleteProgram(program);
+	glDeleteTextures(1, &texture);
+	glDeleteVertexArrays(1, &vertex_array);
 	glfwTerminate();
 	return 0;
 }
